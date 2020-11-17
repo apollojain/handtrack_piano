@@ -1,0 +1,9 @@
+body {
+    font-family: sans-serif;
+  }
+/* 
+#video {
+  -webkit-transform: scaleX(-1);
+  transform: scaleX(-1);
+} */
+/*# sourceMappingURL=handtrack.2dfc9520.css.map */

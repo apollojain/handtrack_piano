@@ -1,0 +1,137 @@
+"use strict";
+
+require("./styles.css");
+
+var handTrack = _interopRequireWildcard(require("handtrackjs"));
+
+function _getRequireWildcardCache() { if (typeof WeakMap !== "function") return null; var cache = new WeakMap(); _getRequireWildcardCache = function () { return cache; }; return cache; }
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } if (obj === null || typeof obj !== "object" && typeof obj !== "function") { return { default: obj }; } var cache = _getRequireWildcardCache(); if (cache && cache.has(obj)) { return cache.get(obj); } var newObj = {}; var hasPropertyDescriptor = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) { var desc = hasPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : null; if (desc && (desc.get || desc.set)) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } newObj.default = obj; if (cache) { cache.set(obj, newObj); } return newObj; }
+
+Navigator.getUserMedia = Navigator.getUserMedia || Navigator.webkitUserMedia || Navigator.mozUserMedia || Navigator.msUserMedia;
+const modelParams = {
+  flipHorizontal: true,
+  // flip e.g for video
+  imageScaleFactor: 0.7,
+  // reduce input image size for gains in speed.
+  maxNumBoxes: 20,
+  // maximum number of boxes to detect
+  iouThreshold: 0.5,
+  // ioU threshold for non-max suppression
+  scoreThreshold: 0.79 // confidence threshold for predictions.
+
+};
+const sampler = new Tone.Sampler({
+  urls: {
+    "C4": "C4.mp3",
+    "D#4": "Ds4.mp3",
+    "F#4": "Fs4.mp3",
+    "A4": "A4.mp3"
+  },
+  release: 1,
+  baseUrl: "https://tonejs.github.io/audio/salamander/"
+}).toDestination();
+const boxes = {
+  1: [0, 0, 160, 280],
+  2: [160, 0, 160, 280],
+  3: [320, 0, 160, 280],
+  4: [480, 0, 160, 280],
+  5: [0, 280, 220, 280],
+  6: [220, 280, 200, 200],
+  7: [420, 280, 220, 200]
+};
+const video = document.querySelector("#video");
+const audio = document.querySelector("#audio");
+const canvas = document.getElementById("cv1");
+const context = canvas.getContext("2d");
+context.globalAlpha = 0.5;
+let model;
+handTrack.startVideo(video).then(status => {
+  if (status) {
+    navigator.getUserMedia({
+      video: {}
+    }, stream => {
+      video.srcObject = stream;
+      setInterval(runDetection, 1000);
+    }, err => console.log(err));
+  }
+});
+
+function drawPredictionDots(predictions) {
+  var handCenters = [];
+
+  for (var i = 0; i < predictions.length; i++) {
+    var prediction = predictions[i];
+    var bbox = prediction.bbox;
+    var centerX = bbox[0] + bbox[2] / 2;
+    var centerY = bbox[1] + bbox[3] / 2;
+    context.fillStyle = "#FF0000";
+    context.fillRect(centerX - 2, centerY - 2, 4, 4);
+    handCenters.push([centerX, centerY]);
+  }
+
+  return handCenters;
+}
+
+function getBoxHit(handCenter) {
+  var centerX = handCenter[0];
+  var centerY = handCenter[1];
+
+  for (var boxId in boxes) {
+    var box = boxes[boxId];
+
+    if (centerX > box[0] && centerX < box[0] + box[2]) {
+      if (centerY > box[1] && centerY < box[1] + box[3]) {
+        return boxId;
+      }
+    }
+  }
+
+  return null;
+}
+
+function getBoxesHit(handCenters) {
+  var boxesHit = [];
+
+  for (var i = 0; i < handCenters.length; i++) {
+    var boxHit = getBoxHit(handCenters[i]);
+
+    if (boxHit != null && boxesHit.includes(boxHit) == false) {
+      boxesHit.push(boxHit);
+    }
+  }
+
+  return boxesHit;
+}
+
+function drawBoxes(boxesHit) {
+  for (var boxId in boxes) {
+    var bbox = boxes[boxId];
+
+    if (boxesHit.includes(boxId)) {
+      context.fillStyle = "#CA3433";
+      context.fillRect(bbox[0], bbox[1], bbox[2], bbox[3]);
+    } else {
+      context.fillStyle = "#FFFFFF";
+      context.fillRect(bbox[0], bbox[1], bbox[2], bbox[3]);
+    }
+
+    context.strokeRect(bbox[0], bbox[1], bbox[2], bbox[3]);
+  }
+}
+
+function playTones(boxesHit) {}
+
+function runDetection() {
+  model.detect(video).then(predictions => {
+    context.clearRect(0, 0, canvas.width, canvas.height);
+    var handCenters = drawPredictionDots(predictions);
+    var boxesHit = getBoxesHit(handCenters);
+    drawBoxes(boxesHit);
+    playTones(boxesHit);
+  });
+}
+
+handTrack.load(modelParams).then(lmodel => {
+  model = lmodel;
+});

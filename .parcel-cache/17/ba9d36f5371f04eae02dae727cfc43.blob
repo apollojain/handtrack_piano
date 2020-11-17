@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html>
+  <head><link rel="stylesheet" href="/handtrack.2dfc9520.css">
+    <title>Parcel Sandbox</title>
+    <meta charset="UTF-8">
+  </head>
+
+  <body>
+    <!-- <audio src="./warning-sound.mp3" id="audio"></audio> -->
+    <div id="vidBox">
+        <video id="video"></video>
+    </div>
+    <script src="/handtrack.8796d10c.js"></script>
+  </body>
+</html>

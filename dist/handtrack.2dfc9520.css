@@ -1,0 +1,19 @@
+body {
+    font-family: sans-serif;
+  }
+
+#video {
+  -webkit-transform: scaleX(-1);
+  transform: scaleX(-1);
+  width: 640;
+  height: 480;
+}
+
+.canvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 10;
+}
+
+/*# sourceMappingURL=handtrack.2dfc9520.css.map */

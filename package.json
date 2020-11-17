@@ -1,0 +1,13 @@
+{
+  "name": "handtrack",
+  "version": "1.0.0",
+  "main": "index.js",
+  "license": "MIT",
+  "devDependencies": {
+    "parcel": "^2.0.0-beta.1"
+  },
+  "dependencies": {
+    "handtrackjs": "^0.0.13",
+    "tone": "^14.7.58"
+  }
+}

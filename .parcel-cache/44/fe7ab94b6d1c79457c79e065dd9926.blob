@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Parcel Sandbox</title>
+    <meta charset="UTF-8">
+  </head>
+
+  <body>
+    <!-- <audio src="./warning-sound.mp3" id="audio"></audio> -->
+    <div id="container">
+        <video id="video"></video>
+    </div>
+    <script src="6e47342c0aff50cbcd55aa1f2678e07b"></script>
+  </body>
+</html>

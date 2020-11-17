@@ -1,0 +1,18 @@
+body {
+    font-family: sans-serif;
+  }
+
+#video {
+  -webkit-transform: scaleX(-1);
+  transform: scaleX(-1);
+  width: 640;
+  height: 480;
+}
+
+.canvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 10;
+  background-color:rgba(255,0,0,0.5);
+}
