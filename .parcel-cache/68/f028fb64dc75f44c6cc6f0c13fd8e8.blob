@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html" charset="utf-8">
+  <title>FingerPose Example</title>
+  <script src="0894bf636a6c05e515fdff8cc2049692"></script>
+  <script src="b625d34067b5a13c43e3308a8b4ed4ee"></script>
+  <script src="b36627f99359f518fb9a90942122b48a" type="text/javascript"></script>
+  <script src="6e47342c0aff50cbcd55aa1f2678e07b"></script>
+</head>
+<body>
+
+  <div id="video-container">
+    <video id="pose-video" class="layer" playsinline=""></video>
+    <canvas id="pose-canvas" class="layer"></canvas>
+    <div id="pose-result" class="layer"></div>
+  </div>
+
+</body>
+</html>

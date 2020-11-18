@@ -9,6 +9,7 @@
   "dependencies": {
     "fingerpose": "0.0.2",
     "handtrackjs": "^0.0.13",
+    "jquery-modal": "^0.9.2",
     "tone": "^14.7.58"
   }
 }

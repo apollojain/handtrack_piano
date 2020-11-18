@@ -1,0 +1,241 @@
+"use strict";
+
+require("./styles.css");
+
+var fp = _interopRequireWildcard(require("fingerpose"));
+
+var Tone = _interopRequireWildcard(require("tone"));
+
+function _getRequireWildcardCache() { if (typeof WeakMap !== "function") return null; var cache = new WeakMap(); _getRequireWildcardCache = function () { return cache; }; return cache; }
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } if (obj === null || typeof obj !== "object" && typeof obj !== "function") { return { default: obj }; } var cache = _getRequireWildcardCache(); if (cache && cache.has(obj)) { return cache.get(obj); } var newObj = {}; var hasPropertyDescriptor = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) { var desc = hasPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : null; if (desc && (desc.get || desc.set)) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } newObj.default = obj; if (cache) { cache.set(obj, newObj); } return newObj; }
+
+Navigator.getUserMedia = Navigator.getUserMedia || Navigator.webkitUserMedia || Navigator.mozUserMedia || Navigator.msUserMedia;
+const sampler = new Tone.Sampler({
+  urls: {
+    "C4": "C4.mp3",
+    "D#4": "Ds4.mp3",
+    "F#4": "Fs4.mp3",
+    "A4": "A4.mp3"
+  },
+  release: 1,
+  baseUrl: "https://tonejs.github.io/audio/salamander/"
+}).toDestination();
+const boxes = {
+  1: [0, 0, 160, 280],
+  2: [160, 0, 160, 280],
+  3: [320, 0, 160, 280],
+  4: [480, 0, 160, 280],
+  5: [0, 280, 220, 280],
+  6: [220, 280, 200, 200],
+  7: [420, 280, 220, 200]
+};
+
+function drawPredictionDots(predictions, context) {
+  var handCenters = [];
+
+  for (var i = 0; i < predictions.length; i++) {
+    var prediction = predictions[i];
+    var bbox = prediction.bbox;
+    var centerX = bbox[0] + bbox[2] / 2;
+    var centerY = bbox[1] + bbox[3] / 2;
+    context.fillStyle = "#FF0000";
+    context.fillRect(centerX - 2, centerY - 2, 4, 4);
+    handCenters.push([centerX, centerY]);
+  }
+
+  return handCenters;
+}
+
+function getBoxHit(handCenter) {
+  var centerX = handCenter[0];
+  var centerY = handCenter[1];
+
+  for (var boxId in boxes) {
+    var box = boxes[boxId];
+
+    if (centerX > box[0] && centerX < box[0] + box[2]) {
+      if (centerY > box[1] && centerY < box[1] + box[3]) {
+        return boxId;
+      }
+    }
+  }
+
+  return null;
+}
+
+function getBoxesHit(handCenters) {
+  var boxesHit = [];
+
+  for (var i = 0; i < handCenters.length; i++) {
+    var boxHit = getBoxHit(handCenters[i]);
+
+    if (boxHit != null && boxesHit.includes(boxHit) == false) {
+      boxesHit.push(boxHit);
+    }
+  }
+
+  return boxesHit;
+}
+
+function drawBoxes(boxesHit, context) {
+  for (var boxId in boxes) {
+    var bbox = boxes[boxId];
+
+    if (boxesHit.includes(boxId)) {
+      context.fillStyle = "#CA3433";
+      context.fillRect(bbox[0], bbox[1], bbox[2], bbox[3]);
+    } else {
+      context.fillStyle = "#FFFFFF";
+      context.fillRect(bbox[0], bbox[1], bbox[2], bbox[3]);
+    }
+
+    context.strokeRect(bbox[0], bbox[1], bbox[2], bbox[3]);
+  }
+}
+
+function playTones(boxesHit) {
+  var notes = ["C4", "D4", "E4", "F4", "G4", "A4", "B4"];
+  var notesToPlay = [];
+
+  for (var i = 0; i < boxesHit.length; i++) {
+    notesToPlay.push(notes[boxesHit[i] - 1]);
+  }
+
+  if (notesToPlay.length > 0) {
+    console.log(notesToPlay);
+    Tone.loaded().then(() => {
+      sampler.triggerAttackRelease(notesToPlay, 4);
+    });
+  }
+}
+
+const config = {
+  video: {
+    width: 640,
+    height: 480,
+    fps: 30
+  }
+};
+const landmarkColors = {
+  thumb: 'red',
+  indexFinger: 'blue',
+  middleFinger: 'yellow',
+  ringFinger: 'green',
+  pinky: 'pink',
+  palmBase: 'white'
+};
+const gestureStrings = {
+  'thumbs_up': '👍',
+  'victory': '✌🏻'
+};
+
+async function main() {
+  const video = document.querySelector("#pose-video");
+  const canvas = document.querySelector("#pose-canvas");
+  const ctx = canvas.getContext("2d");
+  const resultLayer = document.querySelector("#pose-result"); // configure gesture estimator
+  // add "✌🏻" and "👍" as sample gestures
+
+  const knownGestures = [fp.Gestures.VictoryGesture, fp.Gestures.ThumbsUpGesture];
+  const GE = new fp.GestureEstimator(knownGestures); // load handpose model
+
+  const model = await handpose.load();
+  console.log("Handpose model loaded"); // main estimation loop
+
+  const estimateHands = async () => {
+    // clear canvas overlay
+    ctx.clearRect(0, 0, config.video.width, config.video.height);
+    resultLayer.innerText = ''; // get hand landmarks from video
+    // Note: Handpose currently only detects one hand at a time
+    // Therefore the maximum number of predictions is 1
+
+    const predictions = await model.estimateHands(video, true);
+
+    for (let i = 0; i < predictions.length; i++) {
+      // draw colored dots at each predicted joint position
+      for (let part in predictions[i].annotations) {
+        for (let point of predictions[i].annotations[part]) {
+          drawPoint(ctx, point[0], point[1], 3, landmarkColors[part]);
+        }
+      } // now estimate gestures based on landmarks
+      // using a minimum confidence of 7.5 (out of 10)
+
+
+      const est = GE.estimate(predictions[i].landmarks, 7.5);
+
+      if (est.gestures.length > 0) {
+        // find gesture with highest confidence
+        let result = est.gestures.reduce((p, c) => {
+          return p.confidence > c.confidence ? p : c;
+        });
+        resultLayer.innerText = gestureStrings[result.name];
+      } // get the center of the bbox
+
+
+      var bbox = predictions[i].boundingBox;
+      var centerX = (bbox.topLeft[0] + bbox.bottomRight[0]) / 2.0;
+      var centerY = (bbox.topLeft[1] + bbox.bottomRight[1]) / 2.0; // get the boxes hit
+
+      var boxesHit = getBoxesHit([centerX, centerY]);
+      var boxesHit = getBoxesHit(handCenters);
+      drawBoxes(boxesHit);
+      playTones(boxesHit);
+    } // ...and so on
+
+
+    setTimeout(() => {
+      estimateHands();
+    }, 1000 / config.video.fps);
+  };
+
+  ctx.globalAlpha = 0.5;
+  estimateHands();
+  console.log("Starting predictions");
+}
+
+async function initCamera(width, height, fps) {
+  const constraints = {
+    audio: false,
+    video: {
+      facingMode: "user",
+      width: width,
+      height: height,
+      frameRate: {
+        max: fps
+      }
+    }
+  };
+  const video = document.querySelector("#pose-video");
+  video.width = width;
+  video.height = height; // get video stream
+
+  const stream = await navigator.mediaDevices.getUserMedia(constraints);
+  video.srcObject = stream;
+  return new Promise(resolve => {
+    video.onloadedmetadata = () => {
+      resolve(video);
+    };
+  });
+}
+
+function drawPoint(ctx, x, y, r, color) {
+  ctx.beginPath();
+  ctx.arc(x, y, r, 0, 2 * Math.PI);
+  ctx.fillStyle = color;
+  ctx.fill();
+}
+
+window.addEventListener("DOMContentLoaded", () => {
+  initCamera(config.video.width, config.video.height, config.video.fps).then(video => {
+    video.play();
+    video.addEventListener("loadeddata", event => {
+      console.log("Camera is ready");
+      main();
+    });
+  });
+  const canvas = document.querySelector("#pose-canvas");
+  canvas.width = config.video.width;
+  canvas.height = config.video.height;
+  console.log("Canvas initialized");
+});
