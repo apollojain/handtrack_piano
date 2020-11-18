@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html" charset="utf-8">
+  <title>FingerPose Example</title>
+  <!-- Remember to include jQuery :) -->
+  <script src="3e0fda592596bbae814d0d2d1d31bac1"></script>
+
+  <script src="0894bf636a6c05e515fdff8cc2049692"></script>
+  <script src="b625d34067b5a13c43e3308a8b4ed4ee"></script>
+  <script src="b36627f99359f518fb9a90942122b48a" type="text/javascript"></script>
+  <link rel="stylesheet" href="b5d87532abe715ebf58f3c8d0be3a7a4">
+  <script src="9cc37b42f11bebdff1baafd841772904"></script>
+  <script src="5f8d8d38d13a1f778968cf3e23e79e87"></script>
+</head>
+<body>
+
+  <div id="video-container">
+    <video id="pose-video" class="layer" playsinline=""></video>
+    <canvas id="pose-canvas" class="layer"></canvas>
+    <div id="pose-result" class="layer"></div>
+  </div>
+  <!-- Trigger the modal with a button -->
+  <button type="button" id="instructions" class="btn btn-info btn-lg" data-toggle="modal" data-target="#myModal">Instructions</button>
+
+  <!-- Modal -->
+  <div class="modal fade" id="myModal" role="dialog">
+    <div class="modal-dialog">
+    
+      <!-- Modal content-->
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal">&times;</button>
+          <h4 class="modal-title">Instructions</h4>
+        </div>
+        <div class="modal-body">
+          <p>Move your hand to a particular part of the screen to trigger a note at the third octave.</p>
+          <p>Make a 👍 to play that note in the fourth octave.</p>
+          <p>Make a ✌🏻 to play that note in the second octave.</p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+        </div>
+      </div>
+      
+    </div>
+  </div>
+  <script src="6e47342c0aff50cbcd55aa1f2678e07b"></script>
+
+</body>
+</html>

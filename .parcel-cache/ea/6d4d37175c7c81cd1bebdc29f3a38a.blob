@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html" charset="utf-8">
+  <title>FingerPose Example</title>
+  <!-- Remember to include jQuery :) -->
+  <script src="3e0fda592596bbae814d0d2d1d31bac1"></script>
+
+  <script src="0894bf636a6c05e515fdff8cc2049692"></script>
+  <script src="b625d34067b5a13c43e3308a8b4ed4ee"></script>
+  <script src="b36627f99359f518fb9a90942122b48a" type="text/javascript"></script>
+  <script src="6e47342c0aff50cbcd55aa1f2678e07b"></script>
+
+  <!-- jQuery Modal -->
+  <script src="87e20e694d0921502f6ab7392452b526"></script>
+  <link rel="stylesheet" href="04a6dc410e1bd93ecc746b224fdee12e">
+</head>
+<body>
+
+  <div id="video-container">
+    <video id="pose-video" class="layer" playsinline=""></video>
+    <canvas id="pose-canvas" class="layer"></canvas>
+    <div id="pose-result" class="layer"></div>
+  </div>
+
+  <!-- Modal HTML embedded directly into document -->
+<div id="ex1" class="modal">
+  <p>Thanks for clicking. That felt good.</p>
+  <a href="#" rel="modal:close">Close</a>
+</div>
+
+<!-- Link to open the modal -->
+<p><a href="#ex1" rel="modal:open">Open Modal</a></p>
+
+</body>
+</html>
